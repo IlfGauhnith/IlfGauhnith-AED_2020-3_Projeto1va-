@@ -24,9 +24,9 @@ class FilaUnderflow(Exception):
 
 
 class NoFilaSequencial:
-    def __init__(self, key, valor):
+    def __init__(self, key, value):
         self.key = key
-        self.valor = valor
+        self.value = value
 
 
 class FilaSequencial:
@@ -113,7 +113,33 @@ class FilaSequencial:
 
     def to_string(self):
         res = ''
+        if self.last_added == 0:
+            return res
+
         for i in range(1, self.last_added+1, 1):
-            res = res + f' | {self.fila[i].valor}'
+            res = res + f' | {self.fila[i].value}'
 
         return res
+
+
+class QuickSort:
+
+    @classmethod
+    def particionar(cls, array, p, r):
+
+        x = array[r].value
+        i = p - 1
+        for j in range(p, r, 1):
+            if array[j].value >= x:
+                i = i + 1
+                array[i], array[j] = array[j], array[i]
+
+        array[i+1], array[r] = array[r], array[i+1]
+        return i + 1
+
+    @classmethod
+    def quicksort(cls, array, p, r):
+        if p < r:
+            q = cls.particionar(array, p, r)
+            cls.quicksort(array, p, q - 1)
+            cls.quicksort(array, q + 1, r)
