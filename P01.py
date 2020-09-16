@@ -127,10 +127,10 @@ class QuickSort:
     @classmethod
     def particionar(cls, array, p, r):
 
-        x = array[r].value
+        x = array[r].value.iniciativa
         i = p - 1
         for j in range(p, r, 1):
-            if array[j].value >= x:
+            if array[j].value.iniciativa >= x:
                 i = i + 1
                 array[i], array[j] = array[j], array[i]
 
@@ -143,3 +143,223 @@ class QuickSort:
             q = cls.particionar(array, p, r)
             cls.quicksort(array, p, q - 1)
             cls.quicksort(array, q + 1, r)
+
+
+class Lutador:
+
+    def __init__(self, key, time, dano, hp, iniciativa):
+        self.key = key
+        self.time = time
+        self.dano = dano
+        self.hp = hp
+        self.iniciativa = iniciativa
+        self.atacou = False
+        self.vivo = True
+
+
+class Time:
+
+    def __init__(self, numero_id):
+        self.numero_id = numero_id             # Identificador dos times controlado internamente pela programa.
+        self.lutadores = FilaSequencial(10)    # Inicialmente tamanho 10, mas pode aumentar.
+        self.cemiterio = FilaSequencial(10)
+        self.score = 0
+
+    def get_lutadores_size(self):
+        return self.lutadores.last_added
+
+    def get_cemiterio_size(self):
+        return self.cemiterio.last_added
+
+    def ordenar_lutadores(self):
+        if self.lutadores.last_added == 1 or self.lutadores.last_added == 0:
+            return
+
+        QuickSort.quicksort(self.lutadores.fila, 1, self.lutadores.last_added)
+
+    def ordenar_cemiterio(self):
+        if self.cemiterio.last_added == 1 or self.cemiterio.last_added == 1:
+            return
+
+        QuickSort.quicksort(self.cemiterio.fila, 1, self.cemiterio.last_added)
+
+    def lutadores_to_string(self):
+        if self.lutadores.last_added == 0:
+            return 'Fila de lutadores vazia'
+
+        res = ''
+
+        if self.lutadores.last_added == 1:
+            res = res + f'Identificador do lutador: {self.lutadores.fila[1].value.key}\n'
+            res = res + f'Iniciativa: {self.lutadores.fila[1].value.iniciativa}\n'
+            res = res + f'Pontos de vida restantes: {self.lutadores.fila[1].value.hp}\n\n'
+
+            return res
+
+        for i in range(1, self.lutadores.last_added+1, 1):
+            res = res + f'Posição na fila: {i}\n'
+            res = res + f'Identificador do lutador: {self.lutadores.fila[i].value.key}\n'
+            res = res + f'Iniciativa: {self.lutadores.fila[i].value.iniciativa}\n'
+            res = res + f'Pontos de vida restantes: {self.lutadores.fila[i].value.hp}\n\n'
+
+        return res
+
+    def cemiterio_to_string(self):
+        if self.cemiterio.last_added == 0:
+            return 'Cemiterio vazio'
+
+        res = ''
+
+        if self.cemiterio.last_added == 1:
+            res = res + f'Identificador do lutador: {self.cemiterio.fila[1].value.key}\n'
+            res = res + f'Iniciativa: {self.cemiterio.fila[1].value.iniciativa}\n'
+            res = res + f'Pontos de vida restantes: {self.cemiterio.fila[1].value.hp}\n\n'
+
+            return res
+
+        for i in range(1, self.cemiterio.last_added+1, 1):
+            res = res + f'Posição na fila: {i}\n'
+            res = res + f'Identificador do lutador: {self.cemiterio.fila[i].value.key}\n'
+            res = res + f'Iniciativa: {self.cemiterio.fila[i].value.iniciativa}\n'
+            res = res + f'Pontos de vida restantes: {self.cemiterio.fila[i].value.hp}\n\n'
+
+        return res
+
+
+class Game:
+    time1 = Time(1)
+    time2 = Time(2)
+
+    @classmethod
+    def turno(cls):
+        time_id_input = 0
+        lutador_key_input = 0
+        dano_input = 0
+        hp_input = 0
+        iniciativa_input = 1
+        time_id_input = 0
+        decisao_input = 0
+
+        # PRIMEIRA ETAPA
+        # INSERÇÃO DE LUTADORES EM TIMES
+        while True:
+            print('Inserção de lutadores nos times.')
+            print('Não são permitidas keys duplicadas.')
+            print('')
+
+            print('Digite qualquer tecla para continuar.')
+            print('Digite 0 para ir para a próxima etapa.')
+            decisao_input = input('Digite sua decisao: ')
+
+            if int(decisao_input) == 0:
+                break
+
+            while True:
+                time_id_input = input('Escolha o time que deseja adicionar um lutador. Digite 1 ou 2: ')
+                if int(time_id_input) != 1 and int(time_id_input) != 2:
+                    print('Digite apenas 1 ou 2!')
+                    print('')
+                else:
+                    break
+
+            while True:
+                lutador_key_input = input('Digite a key, o número inteiro identificador do lutador: ')
+                if isinstance(int(lutador_key_input), int):    # qq eu to fazendo
+                    if cls.time1.lutadores.buscar(int(lutador_key_input))[1] is not None:
+                        print('Esse identificador já é usado e está nos lutadores do time 1.')
+                        print('')
+                    elif cls.time1.cemiterio.buscar(int(lutador_key_input))[1] is not None:
+                        print('Esse identificador já é usado e está no cemitério do time 1.')
+                        print('')
+                    elif cls.time2.lutadores.buscar(int(lutador_key_input))[1] is not None:
+                        print('Esse identificador já é usado e está nos lutadores do time 2.')
+                        print('')
+                    elif cls.time2.cemiterio.buscar(int(lutador_key_input))[1] is not None:
+                        print('Esse identificador já é usado e está no cemitério do time 2.')
+                        print('')
+                    else:
+                        break
+                else:
+                    print('Digite apenas números inteiros')
+                    print('')
+
+            while True:
+                dano_input = input('Digite o valor do dano: ')
+                if int(dano_input) <= 0:
+                    print('Não são permitidos valores menores ou iguais a 0.')
+                    print('')
+                else:
+                    break
+
+            while True:
+                hp_input = input('Digite o número de pontos de vida do lutador: ')
+                if int(hp_input) <= 0:
+                    print('Não são permitidos valores menores ou iguais a 0.')
+                    print('')
+                else:
+                    break
+
+            while True:
+                iniciativa_input = input('Digite um valor de 1 a 100 para o valor de iniciativa do lutador: ')
+                if int(iniciativa_input) < 1 or int(iniciativa_input) > 100:
+                    print('O valor deve ser entre 1 e 100.')
+                else:
+                    break
+
+            lutador = Lutador(int(lutador_key_input), int(time_id_input), int(dano_input), int(hp_input), int(iniciativa_input))
+            if int(time_id_input) == 1:
+                cls.time1.lutadores.inserir(int(lutador_key_input), lutador)
+            else:
+                cls.time2.lutadores.inserir(int(lutador_key_input), lutador)
+
+        print('\n\n\n')
+
+        # RELATÓRIO DE STATUS DE UM TIME
+        # Ordenação das filas em ordem decrescente
+        cls.time1.ordenar_lutadores()
+        cls.time1.ordenar_cemiterio()
+        cls.time2.ordenar_lutadores()
+        cls.time2.ordenar_cemiterio()
+        while True:
+            print('Relatório de times')
+            print('Digite 1 para continuar ou qualquer outra tecla para ir para a próxima etapa.')
+            decisao_input = input('Digite: ')
+            if int(decisao_input) != 1:
+                break
+
+            while True:
+                time_id_input = input('Digite o id do time, 1 ou 2, que você deseja ver o relatório: ')
+                try:
+                    if int(time_id_input) != 1 and int(time_id_input) != 2:
+                        print('Digite apenas 1 ou 2!')
+                        print('')
+                    else:
+                        break
+                except ValueError as err:
+                    print(err.__str__())
+                    print('')
+
+            try:
+                if int(time_id_input) == 1:
+                    print('Relatório do time 1: ')
+                    print('Relatório de lutadores')
+                    print(cls.time1.lutadores_to_string())
+                    print('Relatório de cemitério')
+                    print(cls.time1.cemiterio_to_string())
+                    print('')
+                else:
+                    print('Relatório do time 2: ')
+                    print('Relatório de lutadores')
+                    print(cls.time2.lutadores_to_string())
+                    print('Relatório de cemitério')
+                    print(cls.time2.cemiterio_to_string())
+            except ValueError as err:
+                print(err.__str__())
+                print('')
+
+
+def main():
+    Game.turno()
+
+if __name__ == "__main__":
+    main()
