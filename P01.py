@@ -231,7 +231,38 @@ class Game:
     time2 = Time(2)
 
     @classmethod
-    def turno(cls):
+    def calcular_resultado(cls):
+        # Retornar um valor inteiro representando o vencedor
+        # 0 = Ainda não foi decidido, continuar jogo.
+        # 1 = time1.
+        # 2 = time2.
+        # 3 = empate.
+
+        cls.time1.score = cls.time2.get_cemiterio_size()
+        cls.time2.score = cls.time1.get_cemiterio_size()
+
+        if cls.time1.get_lutadores_size() == 0 and cls.time2.get_lutadores_size() >= 1:
+            return 2
+        elif cls.time2.get_lutadores_size() == 0 and cls.time1.get_lutadores_size() >= 1:
+            return 1
+
+        if cls.time1.get_lutadores_size() > 0 and cls.time2.get_lutadores_size() > 0:
+            if cls.time1.score >= 20 and cls.time2.score < 20:
+                return 1
+            elif cls.time2.score >= 20 and cls.time1.score < 20:
+                return 2
+            elif cls.time1.score >= 20 and cls.time2.score >= 20:
+                if cls.time1.score > cls.time2.score:
+                    return 1
+                elif cls.time2.score > cls.time1.score:
+                    return 2
+                else:
+                    return 3
+
+        return 0
+
+    @classmethod
+    def play(cls):
         time_id_input = 0
         lutador_key_input = 0
         dano_input = 0
@@ -357,9 +388,101 @@ class Game:
                 print(err.__str__())
                 print('')
 
+        print('')
+
+        # FUGA DE UM LUTADOR
+        while True:
+            print('Fuga de lutadores!')
+            print('Nesta etapa você pode escolher lutadores para fugir do combate!')
+            print('Ele será removido permanentemente do jogo!')
+            print('O lutador deve estar vivo e deve pertencer a um dos times.')
+
+            print('')
+
+            print('Digite 1 para continuar ou qualquer outra tecla para ir para a próxima etapa.')
+            decisao_input = input('Digite: ')
+            if int(decisao_input) != 1:
+                break
+
+            while True:
+                lutador_key_input = input('Digite o identificador do lutador a ser removido: ')
+                try:
+                    if cls.time1.lutadores.buscar(int(lutador_key_input))[1] is not None:
+                        key = cls.time1.lutadores.buscar(int(lutador_key_input))[1]
+                        lutador = cls.time1.lutadores.remover_por_key(key)
+                        print('')
+                        print(f'Lutador de identificador {key} fugiu do combate!')
+                        print('')
+                        del lutador
+                        break
+                    elif cls.time2.lutadores.buscar(int(lutador_key_input))[1] is not None:
+                        key = cls.time2.lutadores.buscar(int(lutador_key_input))[1]
+                        lutador = cls.time2.lutadores.remover_por_key(key)
+                        print('')
+                        print(f'Lutador de identificador {key} fugiu do combate!')
+                        print('')
+                        del lutador
+                        break
+                    else:
+                        print('Identificador não existe em nenhum dos times!')
+                except ValueError as err:
+                    print(err.__str__())
+                    print('')
+            #TODO CHECAR SE TIME TÁ VAZIO APÓS FUGA
+
+        # SEGUNDA ETAPA
+        # COMBATE
+        while True:
+            no_fila_combatente1 = cls.time1.lutadores.remover()
+            no_fila_combatente2 = cls.time2.lutadores.remover()
+
+            # Os dois não atacaram
+            if not no_fila_combatente1.value.atacou and not no_fila_combatente2.value.atacou:
+                no_fila_combatente1.value.hp = no_fila_combatente1.value.hp - no_fila_combatente2.value.dano
+                no_fila_combatente2.value.hp = no_fila_combatente2.value.hp - no_fila_combatente1.value.dano
+
+            # #1 atacou e #2 não
+            elif no_fila_combatente1.value.atacou and not no_fila_combatente2.value.atacou:
+                no_fila_combatente1.value.hp = no_fila_combatente1.value.hp - no_fila_combatente2.value.dano
+
+            # #1 não atacou e #2 atacou
+            elif not not no_fila_combatente1.value.atacou and no_fila_combatente2.value.atacou:
+                no_fila_combatente2.value.hp = no_fila_combatente2.value.hp - no_fila_combatente1.value.dano
+
+            # Os dois atacaram
+            else:
+                break
+
+            if no_fila_combatente1.value.hp <= 0:
+                no_fila_combatente1.value.vivo = False
+                cls.time1.cemiterio.inserir(no_fila_combatente1.key, no_fila_combatente1.value)
+            else:
+                cls.time1.lutadores.inserir(no_fila_combatente1.key, no_fila_combatente1.value)
+
+            if no_fila_combatente2.value.hp <= 0:
+                no_fila_combatente2.value.vivo = False
+                cls.time2.cemiterio.inserir(no_fila_combatente2.key, no_fila_combatente2.value)
+            else:
+                cls.time2.cemiterio.inserir(no_fila_combatente2.key, no_fila_combatente2.value)
+
+        print('')
+
+        #FASE DE RESULTADOS
+        print('FASE DE RESULTADOS!')
+
+        if cls.calcular_resultado() == 1:
+            print('TIME 1 VENCEU!')
+            return
+        elif cls.calcular_resultado() == 2:
+            print('TIME 2 VENCEU!')
+            return
+        elif cls.calcular_resultado() == 3:
+            print('HOUVE EMPATE ENTRE OS 2 TIMES!')
+
 
 def main():
-    Game.turno()
+    Game.play()
+
 
 if __name__ == "__main__":
     main()
